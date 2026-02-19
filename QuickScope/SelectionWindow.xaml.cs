@@ -13,22 +13,12 @@ public partial class SelectionWindow : Window
 {
     private Point _startPoint;
     private bool _isSelecting = false;
-    private readonly string _tempFilePath;
     
     public SelectionWindow(BitmapImage freezeFrame)
     {
         InitializeComponent();
         
         FrozenScreenImage.Source = freezeFrame;
-        
-        // load temp screencap
-        //var bitmap = new BitmapImage();
-        //bitmap.BeginInit();
-        //bitmap.CacheOption = BitmapCacheOption.OnLoad; // so temp can be deleted
-        //bitmap.UriSource= new Uri(_tempFilePath);
-        //bitmap.EndInit();
-        
-        //FrozenScreenImage.Source = bitmap;
     }
     
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -84,7 +74,12 @@ public partial class SelectionWindow : Window
 
     private void Window_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key == Key.Escape) CleanupAndClose();
+        if (e.Key == Key.Escape)
+        {
+            var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
+            SaveImage(freezeFrame);
+            CleanupAndClose();
+        }
     }
 
     private void CropAndSave()
@@ -107,23 +102,8 @@ public partial class SelectionWindow : Window
                 (int)(SelectionBox.Height * scaleY));
 
             var croppedBitmap = new CroppedBitmap(originalImage, cropRect);
-
-            // 1. Copy to Clipboard
-            Clipboard.SetImage(croppedBitmap);
-
-            // 2. Save to Disk
-            string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
-            Directory.CreateDirectory(screenshotsFolder);
-            string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                BitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(BitmapFrame.Create(croppedBitmap));
-                encoder.Save(fileStream);
-            }
-
-            Console.WriteLine($"Saved cropped capture to: {filePath}");
+            
+            SaveImage(croppedBitmap);
         }
         finally
         {
@@ -134,11 +114,28 @@ public partial class SelectionWindow : Window
     // im only keeping you because you were cool
     private void CleanupAndClose()
     {
-        // Delete the temporary full-screen image
-        //if (File.Exists(_tempFilePath))
-        //{
-            //try { File.Delete(_tempFilePath); } catch { }
-        //}
         Close();
+    }
+
+    private void SaveImage(BitmapSource freezeFrame)
+    {
+        // save to clipboard
+        Clipboard.SetImage(freezeFrame);
+        
+        // save to disk
+        string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+        Directory.CreateDirectory(screenshotsFolder);
+        string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        {
+            BitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(freezeFrame));
+            encoder.Save(fileStream);
+        }
+
+        Console.WriteLine($"Saved capture to: {filePath}");
+        
+        
     }
 }

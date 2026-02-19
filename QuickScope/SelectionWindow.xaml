@@ -8,7 +8,7 @@
         Title="SelectionWindow" Height="450" Width="800"
         WindowStyle="None" WindowState="Maximized"
         Topmost="True" ShowInTaskbar="False"
-        Cursor="Cross" Background="Transparent"
+        AllowsTransparency="True" Cursor="Cross" Background="Transparent"
         MouseDown="Window_MouseDown" 
         MouseMove="Window_MouseMove" 
         MouseUp="Window_MouseUp"

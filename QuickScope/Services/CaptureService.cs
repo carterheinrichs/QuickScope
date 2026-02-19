@@ -96,6 +96,9 @@ public class CaptureService
         using var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
         await capturedBitmap.SaveAsync(stream, CanvasBitmapFileFormat.Bmp); // bmp instead of png for SPEED
        
+        // READ IMMEADATLY
+        stream.Seek(0);
+       
         // convert to WPF BitmapImage
         var bitmapImage = new BitmapImage();
         bitmapImage.BeginInit();
