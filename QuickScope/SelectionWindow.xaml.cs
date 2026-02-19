@@ -23,10 +23,6 @@ public partial class SelectionWindow : Window
     {
         FrozenScreenImage.Source = freezeFrame;
         
-        //reset the box
-        SelectionBox.Visibility = Visibility.Collapsed;
-        SelectionBox.Width = 0;
-        SelectionBox.Height = 0;
         
         this.Show();
         this.Activate(); // come up to the front of the class
@@ -123,8 +119,14 @@ public partial class SelectionWindow : Window
     }
 
     // im only keeping you because you were cool
+    // I knew you would be useful...
     private void CleanupAndClose()
     {
+        //reset the box
+        SelectionBox.Visibility = Visibility.Collapsed;
+        SelectionBox.Width = 0;
+        SelectionBox.Height = 0;
+        
         //Close();
         this.Hide();
     }
