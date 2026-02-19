@@ -3,6 +3,7 @@ using System.Data;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using QuickScope.Services;
 
 namespace QuickScope;
 
@@ -62,7 +63,22 @@ public partial class App : Application
 
             if (id == HOTKEY_ID_CAPTURE)
             {
-                Console.WriteLine("Hotkey pressed!");
+                // call our screenshot service
+                //CaptureService.CapturePrimaryScreenAsync();
+                
+                // wtf is this
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await CaptureService.CapturePrimaryScreenAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"CAPTURE FAILED: {ex.Message}");
+                    }
+                });
+                
                 handled = true;
             }
         }
