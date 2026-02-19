@@ -22,6 +22,12 @@ public partial class SelectionWindow : Window
     public void ShowFreeze(BitmapSource freezeFrame)
     {
         FrozenScreenImage.Source = freezeFrame;
+        
+        //reset the box
+        SelectionBox.Visibility = Visibility.Collapsed;
+        SelectionBox.Width = 0;
+        SelectionBox.Height = 0;
+        
         this.Show();
         this.Activate(); // come up to the front of the class
     }
