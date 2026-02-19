@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.Data;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using QuickScope.Services;
@@ -50,15 +52,35 @@ public partial class App : Application
 
         if (!registered)
         {
+            MessageBox.Show("Failed to register hotkeys. Another program might be using them", "QuickScope Err");
             Current.Shutdown();
             return;
         }
         
         //  Hook into the WPF component dispatcher to listen to raw Windows messages
         ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
-       
-        // pre warm the window =| 
+        
+        // this is bad
         _selectionWindow = new SelectionWindow();
+        
+        // force WPF to build the window handle invisibly
+        _selectionWindow.Opacity = 0;
+        _selectionWindow.Show();
+        _selectionWindow.Hide();
+        _selectionWindow.Opacity = 1;
+
+        Task.Run(() =>
+        {
+            try
+            {
+                CaptureService.CaptureInstant();
+                Console.WriteLine("Background warmup");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        });
     }
 
     private void OnThreadPreprocessMessage(ref MSG msg, ref bool handled)
