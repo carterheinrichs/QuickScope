@@ -11,6 +11,8 @@
         <RuntimeIdentifier>win-x64</RuntimeIdentifier>
 
         <WindowsPackageType>None</WindowsPackageType>
+        <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     </PropertyGroup>
 
     <ItemGroup>

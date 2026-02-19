@@ -54,7 +54,7 @@ public class CaptureService
         var canvasDevice = new CanvasDevice();
         var direct3DDevice = (IDirect3DDevice)canvasDevice;
 
-        var framePool = Direct3D11CaptureFramePool.Create(
+        var framePool = Direct3D11CaptureFramePool.CreateFreeThreaded(
             direct3DDevice,
             Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
             1,
@@ -100,5 +100,7 @@ public class CaptureService
         Console.WriteLine($"Saved full-screen capture to: {filePath}");
 
         // For clipboard need to stream this into a format WPF understands
+        
+        
     }
 }
