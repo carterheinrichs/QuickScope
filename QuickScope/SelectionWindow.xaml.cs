@@ -14,11 +14,16 @@ public partial class SelectionWindow : Window
     private Point _startPoint;
     private bool _isSelecting = false;
     
-    public SelectionWindow(BitmapImage freezeFrame)
+    public SelectionWindow()
     {
         InitializeComponent();
-        
+    }
+    
+    public void ShowFreeze(BitmapSource freezeFrame)
+    {
         FrozenScreenImage.Source = freezeFrame;
+        this.Show();
+        this.Activate(); // come up to the front of the class
     }
     
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -114,7 +119,8 @@ public partial class SelectionWindow : Window
     // im only keeping you because you were cool
     private void CleanupAndClose()
     {
-        Close();
+        //Close();
+        this.Hide();
     }
 
     private void SaveImage(BitmapSource freezeFrame)

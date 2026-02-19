@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -14,6 +15,9 @@ namespace QuickScope;
 /// </summary>
 public partial class App : Application
 {
+    // keep a reference to the selection window 
+    private SelectionWindow _selectionWindow;
+    
     // P/Invoke Signatures to Native Windows API
     [DllImport( "user32.dll")]
     private static extern bool RegisterHotKey(IntPtr hWnd, int id, uint fsModifiers, uint vk);
@@ -46,50 +50,25 @@ public partial class App : Application
 
         if (!registered)
         {
-            MessageBox.Show("Failed to register hotkeys. Another program might be using them", "QuickScope Err");
             Current.Shutdown();
             return;
         }
         
         //  Hook into the WPF component dispatcher to listen to raw Windows messages
         ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
+       
+        // pre warm the window =| 
+        _selectionWindow = new SelectionWindow();
     }
 
     private void OnThreadPreprocessMessage(ref MSG msg, ref bool handled)
     {
         // intercept the WM_HOTKEY message
-        if (msg.message == WM_HOTKEY)
+        if (msg.message == WM_HOTKEY && msg.wParam.ToInt32() == HOTKEY_ID_CAPTURE)
         {
-            int id = msg.wParam.ToInt32();
-
-            if (id == HOTKEY_ID_CAPTURE)
-            {
-                // call our screenshot service
-                //CaptureService.CapturePrimaryScreenAsync();
-                
-                // wtf is this
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        //await CaptureService.CapturePrimaryScreenAsync();
-                        BitmapImage freezeImage = await CaptureService.CapturePrimaryScreenAsync();
-                        
-                        // dispatch ui to open the freeze screen
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            var selectionWindow = new SelectionWindow(freezeImage);
-                            selectionWindow.ShowDialog();
-                        });
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"CAPTURE FAILED: {ex.Message}");
-                    }
-                });
-                
-                handled = true;
-            }
+            BitmapSource freezeFrame = CaptureService.CaptureInstant();
+            _selectionWindow.ShowFreeze(freezeFrame);
+            handled = true;
         }
     }
 

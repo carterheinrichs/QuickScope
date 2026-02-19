@@ -32,7 +32,7 @@ public class CaptureService
 
     private const uint MONITOR_DEFAULTTOPRIMARY = 1;
 
-    public static async Task<BitmapImage> CapturePrimaryScreenAsync()
+    public static async Task<BitmapSource> CapturePrimaryScreenAsync()
     {
         // Get the primary monitor handle
         IntPtr monitorHandle = MonitorFromWindow(IntPtr.Zero, MONITOR_DEFAULTTOPRIMARY);
@@ -91,23 +91,43 @@ public class CaptureService
         //  stop capture and clean up
         session.Dispose();
         framePool.Dispose();
+        
+        // THIS IS FASTER and deranged
+        byte[] pixels = capturedBitmap.GetPixelBytes();
+        int width = (int)capturedBitmap.SizeInPixels.Width;
+        int height = (int)capturedBitmap.SizeInPixels.Height;
+        
+        // wpf like pixel like this i think
+        var format = System.Windows.Media.PixelFormats.Bgra32;
+        int stride = width * format.BitsPerPixel / 8; // 4 bytes per pixel
+        
+        // create wpf bitmap directly from memory 
+        var bitmapSource = BitmapSource.Create(width, height, 96, 96, format, null, pixels, stride);
+        
+        bitmapSource.Freeze();
+       
+        // free gpu from my clutches =(
+        capturedBitmap.Dispose();
+        
+        return bitmapSource;
+        
 
         // save to RAM instead =PPP
-        using var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
-        await capturedBitmap.SaveAsync(stream, CanvasBitmapFileFormat.Bmp); // bmp instead of png for SPEED
+        //using var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+        //await capturedBitmap.SaveAsync(stream, CanvasBitmapFileFormat.Bmp); // bmp instead of png for SPEED
        
         // READ IMMEADATLY
-        stream.Seek(0);
+        //stream.Seek(0);
        
         // convert to WPF BitmapImage
-        var bitmapImage = new BitmapImage();
-        bitmapImage.BeginInit();
-        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-        bitmapImage.StreamSource = stream.AsStream();
-        bitmapImage.EndInit();
-        bitmapImage.Freeze(); // let me touch the hot memory
+        //var bitmapImage = new BitmapImage();
+        //bitmapImage.BeginInit();
+        //bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        //bitmapImage.StreamSource = stream.AsStream();
+        //bitmapImage.EndInit();
+        //bitmapImage.Freeze(); // let me touch the hot memory
 
-        return bitmapImage;
+        //return bitmapImage;
         
 
         //  save to disk
@@ -143,5 +163,36 @@ public class CaptureService
         });
         */
     }
+    
+    // better?
+    public static BitmapSource CaptureInstant()
+    {
+        // 1. Get physical screen dimensions using WinForms (Handles DPI scaling perfectly)
+        int width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
+        int height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+
+        // 2. The Native GDI+ BitBlt approach (Instantaneous)
+        using var bmp = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+        using var gfx = System.Drawing.Graphics.FromImage(bmp);
+        
+        gfx.CopyFromScreen(0, 0, 0, 0, bmp.Size, System.Drawing.CopyPixelOperation.SourceCopy);
+
+        // 3. Fast conversion to WPF BitmapSource
+        IntPtr hBitmap = bmp.GetHbitmap();
+        try
+        {
+            var source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
+                hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            source.Freeze();
+            return source;
+        }
+        finally
+        {
+            DeleteObject(hBitmap); // Mandatory native GDI cleanup
+        }
+    }
+
+    [DllImport("gdi32.dll")]
+    private static extern bool DeleteObject(IntPtr hObject);
 }
         
