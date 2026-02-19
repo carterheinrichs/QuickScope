@@ -71,7 +71,15 @@ public partial class App : Application
                 {
                     try
                     {
-                        await CaptureService.CapturePrimaryScreenAsync();
+                        //await CaptureService.CapturePrimaryScreenAsync();
+                        string tempPath = await CaptureService.CapturePrimaryScreenAsync();
+                        
+                        // dispatch ui to open the freeze screen
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var selectionWindow = new SelectionWindow(tempPath);
+                            selectionWindow.ShowDialog();
+                        });
                     }
                     catch (Exception ex)
                     {

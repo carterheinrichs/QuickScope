@@ -7,6 +7,7 @@ using Windows.Graphics.DirectX.Direct3D11;
 using Microsoft.Graphics.Canvas;
 using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Media.Imaging;
 using WinRT;
 
 namespace QuickScope.Services;
@@ -31,26 +32,26 @@ public class CaptureService
 
     private const uint MONITOR_DEFAULTTOPRIMARY = 1;
 
-    public static async Task CapturePrimaryScreenAsync()
+    public static async Task<string> CapturePrimaryScreenAsync()
     {
         // Get the primary monitor handle
         IntPtr monitorHandle = MonitorFromWindow(IntPtr.Zero, MONITOR_DEFAULTTOPRIMARY);
 
-        // 2. Create the GraphicsCaptureItem using our COM bridge
+        // create the GraphicsCaptureItem using our COM bridge
         var interop = GraphicsCaptureItem.As<IGraphicsCaptureItemInterop>();
         Guid guid = new Guid("79C3F95B-31F7-4EC2-A464-632EF5D30760"); // IGraphicsCaptureItem GUID
-        
+
         IntPtr itemPointer = interop.CreateForMonitor(monitorHandle, ref guid);
-       
+
         // .net 10 baby
         var captureItem = GraphicsCaptureItem.FromAbi(itemPointer);
-        
+
         // prevent memory leak 
         Marshal.Release(itemPointer);
 
-        if (captureItem == null) return;
+        if (captureItem == null) return null;
 
-        // 3. Initialize the GPU Device and Frame Pool
+        // Initialize the GPU Device and Frame Pool
         var canvasDevice = new CanvasDevice();
         var direct3DDevice = (IDirect3DDevice)canvasDevice;
 
@@ -90,17 +91,44 @@ public class CaptureService
         //  stop capture and clean up
         session.Dispose();
         framePool.Dispose();
+        
+        string tempFilePath = Path.Combine(Path.GetTempPath(), $"QuickScope_Temp_{Guid.NewGuid()}.png");
+        await capturedBitmap.SaveAsync(tempFilePath, CanvasBitmapFileFormat.Png);
+        
+        return tempFilePath; // Hand the path back to App.xaml.cs
 
         //  save to disk
+        /*
         string picturesFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
-        string filePath = Path.Combine(picturesFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+        string screenShotsFolder = Path.Combine(picturesFolder, "Screenshots");
+        Directory.CreateDirectory(screenShotsFolder); // ensure the dir exists (should)
+
+        string filePath = Path.Combine(screenShotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
 
         await capturedBitmap.SaveAsync(filePath, CanvasBitmapFileFormat.Png);
 
         Console.WriteLine($"Saved full-screen capture to: {filePath}");
 
         // For clipboard need to stream this into a format WPF understands
-        
-        
+
+        // copy to Windows Clipboard
+        // load the saved file into a WPF-compatible BitmapImage
+        var clipboardImage = new BitmapImage();
+        clipboardImage.BeginInit();
+        clipboardImage.CacheOption = BitmapCacheOption.OnLoad;
+        clipboardImage.UriSource = new Uri(filePath);
+        clipboardImage.EndInit();
+
+        // Freeze is required to pass the image across different threads
+        clipboardImage.Freeze();
+
+        // the clipboard can only be accessed from a Single Thread Apartment (STA) UI thread
+        Application.Current.Dispatcher.Invoke(() =>
+        {
+            Clipboard.SetImage(clipboardImage);
+            Console.WriteLine("Image successfully copied to clipboard!");
+        });
+        */
     }
 }
+        
