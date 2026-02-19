@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using QuickScope.Services;
+using System.Windows.Media.Imaging;
 
 namespace QuickScope;
 
@@ -72,12 +73,12 @@ public partial class App : Application
                     try
                     {
                         //await CaptureService.CapturePrimaryScreenAsync();
-                        string tempPath = await CaptureService.CapturePrimaryScreenAsync();
+                        BitmapImage freezeImage = await CaptureService.CapturePrimaryScreenAsync();
                         
                         // dispatch ui to open the freeze screen
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            var selectionWindow = new SelectionWindow(tempPath);
+                            var selectionWindow = new SelectionWindow(freezeImage);
                             selectionWindow.ShowDialog();
                         });
                     }

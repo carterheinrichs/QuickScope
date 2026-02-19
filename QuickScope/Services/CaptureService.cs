@@ -32,7 +32,7 @@ public class CaptureService
 
     private const uint MONITOR_DEFAULTTOPRIMARY = 1;
 
-    public static async Task<string> CapturePrimaryScreenAsync()
+    public static async Task<BitmapImage> CapturePrimaryScreenAsync()
     {
         // Get the primary monitor handle
         IntPtr monitorHandle = MonitorFromWindow(IntPtr.Zero, MONITOR_DEFAULTTOPRIMARY);
@@ -91,11 +91,21 @@ public class CaptureService
         //  stop capture and clean up
         session.Dispose();
         framePool.Dispose();
+
+        // save to RAM instead =PPP
+        using var stream = new Windows.Storage.Streams.InMemoryRandomAccessStream();
+        await capturedBitmap.SaveAsync(stream, CanvasBitmapFileFormat.Bmp); // bmp instead of png for SPEED
+       
+        // convert to WPF BitmapImage
+        var bitmapImage = new BitmapImage();
+        bitmapImage.BeginInit();
+        bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+        bitmapImage.StreamSource = stream.AsStream();
+        bitmapImage.EndInit();
+        bitmapImage.Freeze(); // let me touch the hot memory
+
+        return bitmapImage;
         
-        string tempFilePath = Path.Combine(Path.GetTempPath(), $"QuickScope_Temp_{Guid.NewGuid()}.png");
-        await capturedBitmap.SaveAsync(tempFilePath, CanvasBitmapFileFormat.Png);
-        
-        return tempFilePath; // Hand the path back to App.xaml.cs
 
         //  save to disk
         /*

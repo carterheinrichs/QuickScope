@@ -15,19 +15,20 @@ public partial class SelectionWindow : Window
     private bool _isSelecting = false;
     private readonly string _tempFilePath;
     
-    public SelectionWindow(string tempFilePath)
+    public SelectionWindow(BitmapImage freezeFrame)
     {
         InitializeComponent();
-        _tempFilePath = tempFilePath;
+        
+        FrozenScreenImage.Source = freezeFrame;
         
         // load temp screencap
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.CacheOption = BitmapCacheOption.OnLoad; // so temp can be deleted
-        bitmap.UriSource= new Uri(_tempFilePath);
-        bitmap.EndInit();
+        //var bitmap = new BitmapImage();
+        //bitmap.BeginInit();
+        //bitmap.CacheOption = BitmapCacheOption.OnLoad; // so temp can be deleted
+        //bitmap.UriSource= new Uri(_tempFilePath);
+        //bitmap.EndInit();
         
-        FrozenScreenImage.Source = bitmap;
+        //FrozenScreenImage.Source = bitmap;
     }
     
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -130,13 +131,14 @@ public partial class SelectionWindow : Window
         }
     }
 
+    // im only keeping you because you were cool
     private void CleanupAndClose()
     {
         // Delete the temporary full-screen image
-        if (File.Exists(_tempFilePath))
-        {
-            try { File.Delete(_tempFilePath); } catch { }
-        }
+        //if (File.Exists(_tempFilePath))
+        //{
+            //try { File.Delete(_tempFilePath); } catch { }
+        //}
         Close();
     }
 }
