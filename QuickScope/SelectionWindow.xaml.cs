@@ -40,11 +40,24 @@ public partial class SelectionWindow : Window
         DimBottom.Width = DimBottom.Height = 0;
 
         FrozenScreenImage.Source = freezeFrame;
+        
+        this.Opacity = 0;
 
-        this.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
         
         this.Show();
         this.Activate(); // come up to the front of the class
+
+        void OnRendering(object? s, EventArgs e)
+        {
+            CompositionTarget.Rendering -= OnRendering;
+            
+            this.Dispatcher.Invoke(() =>
+            {
+                this.Opacity = 1;
+            }, System.Windows.Threading.DispatcherPriority.Input);
+        }
+        
+        CompositionTarget.Rendering += OnRendering;
 
         
         // Once layout is done, recalculate overlay properly using actual dimensions
@@ -161,6 +174,9 @@ public partial class SelectionWindow : Window
     // I knew you would be useful...
     private void CleanupAndClose()
     {
+        // clear window
+        this.Opacity = 0;
+        
        // take a reset man
        SelectionBox.Visibility = Visibility.Collapsed;
        SelectionBox.Width = 0;
