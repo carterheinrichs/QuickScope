@@ -100,13 +100,16 @@ public partial class App : Application
         }
 
         BitmapSource freezeFrame = CaptureService.CaptureInstant();
+        
+        // Cache the window instead of allocating a heavy WPF layout every time
         _currentWindow = new SelectionWindow();
+        
         _currentWindow.ShowFreeze(freezeFrame);
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        // jannies
+        // jannie
         ComponentDispatcher.ThreadPreprocessMessage -= OnThreadPreprocessMessage;
         UnregisterHotKey(IntPtr.Zero, HOTKEY_ID_CAPTURE);
 

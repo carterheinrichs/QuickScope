@@ -7,35 +7,50 @@ namespace QuickScope.Services;
 
 public class CaptureService
 {
+    private static System.Drawing.Bitmap? _cachedBitmap;
+    private static System.Drawing.Graphics? _cachedGraphics;
+    private static int _width;
+    private static int _height;
+    
     // better?
     public static BitmapSource CaptureInstant()
     {
-        // Get physical screen dimensions using WinForms (Handles DPI scaling perfectly)
-        int width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
-        int height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+        if (_cachedBitmap == null)
+        {
+            _width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
+            _height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+            
+            _cachedBitmap = new System.Drawing.Bitmap(_width, _height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            _cachedGraphics = System.Drawing.Graphics.FromImage(_cachedBitmap);
+        }
 
         // The Native GDI+ BitBlt approach (Instantaneous)
-        using var bmp = new System.Drawing.Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-        using var gfx = System.Drawing.Graphics.FromImage(bmp);
-        
-        gfx.CopyFromScreen(0, 0, 0, 0, bmp.Size, System.Drawing.CopyPixelOperation.SourceCopy);
+        _cachedGraphics!.CopyFromScreen(0, 0, 0, 0, _cachedBitmap.Size, System.Drawing.CopyPixelOperation.SourceCopy);
 
-        // Fast conversion to WPF BitmapSource
-        IntPtr hBitmap = bmp.GetHbitmap();
+        // Fast conversion to WPF BitmapSource avoiding unmanaged handles (HBITMAP)
+        var bitmapData = _cachedBitmap.LockBits(
+            new System.Drawing.Rectangle(0, 0, _width, _height),
+            System.Drawing.Imaging.ImageLockMode.ReadOnly,
+            System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+
         try
         {
-            var source = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(
-                hBitmap, IntPtr.Zero, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
-            source.Freeze();
-            return source;
+            // WriteableBitmap is intensely optimized for fast bulk-pixel writes in WPF
+            var writeableBitmap = new WriteableBitmap(
+                _width, _height, 96, 96, System.Windows.Media.PixelFormats.Pbgra32, null);
+                
+            writeableBitmap.WritePixels(
+                new Int32Rect(0, 0, _width, _height),
+                bitmapData.Scan0,
+                bitmapData.Stride * _height,
+                bitmapData.Stride);
+                
+            writeableBitmap.Freeze();
+            return writeableBitmap;
         }
         finally
         {
-            DeleteObject(hBitmap); // clean upon aiksle 7
+            _cachedBitmap.UnlockBits(bitmapData);
         }
     }
-
-    [DllImport("gdi32.dll")]
-    private static extern bool DeleteObject(IntPtr hObject);
 }
-        
