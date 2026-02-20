@@ -18,7 +18,7 @@ namespace QuickScope;
 public partial class App : Application
 {
     // keep a reference to the selection window 
-    private SelectionWindow _selectionWindow;
+    //private SelectionWindow _selectionWindow;
     
     // P/Invoke Signatures to Native Windows API
     [DllImport( "user32.dll")]
@@ -41,6 +41,9 @@ public partial class App : Application
 
     // id for main capture
     private const int HOTKEY_ID_CAPTURE = 1;
+    
+    // track current windows so we can hide it
+    private SelectionWindow? _currentWindow;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -60,21 +63,6 @@ public partial class App : Application
         //  Hook into the WPF component dispatcher to listen to raw Windows messages
         ComponentDispatcher.ThreadPreprocessMessage += OnThreadPreprocessMessage;
         
-        // this is bad
-        _selectionWindow = new SelectionWindow();
-        
-        // force WPF to build the window handle invisibly
-        _selectionWindow.WindowState = WindowState.Normal; // wpf is dum
-        _selectionWindow.ShowActivated = false;
-        _selectionWindow.Opacity = 0;
-        
-        _selectionWindow.Show();
-        _selectionWindow.Hide();
-        
-        _selectionWindow.Opacity = 1;
-        _selectionWindow.ShowActivated = true;
-        _selectionWindow.WindowState = WindowState.Maximized; // handholding
-
         Task.Run(() =>
         {
             try
@@ -104,14 +92,16 @@ public partial class App : Application
     private async Task TriggerCaptureAsync()
     {
         // we MUST hide it and give Windows a moment to physically erase it before capturing.
-        if (_selectionWindow.IsVisible)
+        if (_currentWindow is {IsVisible: true})
         {
-            _selectionWindow.Hide();
-            await Task.Delay(50); // Give Windows 50ms to draw the clean desktop
+            _currentWindow.Close();
+            _currentWindow = null;
+            await Task.Delay(50);
         }
 
         BitmapSource freezeFrame = CaptureService.CaptureInstant();
-        _selectionWindow.ShowFreeze(freezeFrame);
+        _currentWindow = new SelectionWindow();
+        _currentWindow.ShowFreeze(freezeFrame);
     }
 
     protected override void OnExit(ExitEventArgs e)
