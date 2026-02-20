@@ -99,7 +99,7 @@ public class CaptureService
         
         // wpf like pixel like this i think
         var format = System.Windows.Media.PixelFormats.Bgra32;
-        int stride = width * format.BitsPerPixel / 8; // 4 bytes per pixel
+        int stride = width * format.BitsPerPixel / 8; // 8 bytes per pixel THIS is only for HDR if not 4
         
         // create wpf bitmap directly from memory 
         var bitmapSource = BitmapSource.Create(width, height, 96, 96, format, null, pixels, stride);

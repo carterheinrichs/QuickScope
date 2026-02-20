@@ -23,6 +23,10 @@ public partial class SelectionWindow : Window
     {
         FrozenScreenImage.Source = freezeFrame;
         
+        //reset the box
+        SelectionBox.Visibility = Visibility.Collapsed;
+        SelectionBox.Width = 0;
+        SelectionBox.Height = 0;
         
         this.Show();
         this.Activate(); // come up to the front of the class
@@ -84,8 +88,10 @@ public partial class SelectionWindow : Window
         if (e.Key == Key.Escape)
         {
             var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
-            SaveImage(freezeFrame);
+            
             CleanupAndClose();
+            
+            SaveImage(freezeFrame);
         }
     }
 
@@ -97,6 +103,8 @@ public partial class SelectionWindow : Window
             double y = Canvas.GetTop(SelectionBox);
 
             var originalImage = (BitmapSource)FrozenScreenImage.Source;
+            
+            CleanupAndClose();
 
             // Calculate DPI scaling ratio (WPF layout sizes vs Actual Image Pixels)
             double scaleX = originalImage.PixelWidth / this.ActualWidth;
@@ -112,7 +120,7 @@ public partial class SelectionWindow : Window
             
             SaveImage(croppedBitmap);
         }
-        finally
+        catch (Exception ex)
         {
             CleanupAndClose();
         }
@@ -122,11 +130,6 @@ public partial class SelectionWindow : Window
     // I knew you would be useful...
     private void CleanupAndClose()
     {
-        //reset the box
-        SelectionBox.Visibility = Visibility.Collapsed;
-        SelectionBox.Width = 0;
-        SelectionBox.Height = 0;
-        
         //Close();
         this.Hide();
     }
