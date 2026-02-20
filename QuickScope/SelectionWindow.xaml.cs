@@ -87,9 +87,11 @@ public partial class SelectionWindow : Window
     {
         if (e.Key == Key.Escape)
         {
+            
             var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
             
             await SaveImageAsync(freezeFrame);
+            CleanupAndClose();
         }
     }
 
@@ -101,6 +103,9 @@ public partial class SelectionWindow : Window
             double y = Canvas.GetTop(SelectionBox);
 
             var originalImage = (BitmapSource)FrozenScreenImage.Source;
+
+            // hide selection box
+            SelectionBox.Visibility = Visibility.Collapsed;
             
             // Calculate DPI scaling ratio (WPF layout sizes vs Actual Image Pixels)
             double scaleX = originalImage.PixelWidth / this.ActualWidth;
@@ -114,7 +119,12 @@ public partial class SelectionWindow : Window
 
             var croppedBitmap = new CroppedBitmap(originalImage, cropRect);
             
+            
+            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
+            
             await SaveImageAsync(croppedBitmap);
+            
+            CleanupAndClose();
         }
         catch (Exception ex)
         {
@@ -137,23 +147,19 @@ public partial class SelectionWindow : Window
        SelectionBox.Width = 0;
        SelectionBox.Height = 0;
        
+       // force wpf to update
+       this.UpdateLayout();
+       
        // prevent 
        GC.Collect();
     }
     
     private async System.Threading.Tasks.Task SaveImageAsync(BitmapSource freezeFrame)
     {
-        //  Lock the image in memory FIRST
+        // The UI is already gone, so this heavy lifting won't freeze your screen anymore
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
         freezeFrameToSave.Freeze();
-        
-        // HIDE THE WINDOW
-        CleanupAndClose();
-        
-        // forces Windows to physically erase the window from your monitor before we proceed.
-        await System.Threading.Tasks.Task.Delay(50);
-        
-        // copy to the clipboard (the screen is already clean!)
+    
         try 
         {
             Clipboard.SetImage(freezeFrameToSave);
@@ -162,7 +168,7 @@ public partial class SelectionWindow : Window
         {
             Console.WriteLine($"Clipboard failed: {ex.Message}");
         }
-        
+    
         // Save to disk in the background
         _ = System.Threading.Tasks.Task.Run(() => 
         {
