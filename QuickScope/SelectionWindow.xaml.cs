@@ -121,10 +121,11 @@ public partial class SelectionWindow : Window
             double x = Canvas.GetLeft(SelectionBox);
             double y = Canvas.GetTop(SelectionBox);
 
-            var originalImage = (BitmapSource)FrozenScreenImage.Source;
+            if (FrozenScreenImage.Source is not WriteableBitmap originalBitmap)
+                return;
 
-            double scaleX = originalImage.PixelWidth / this.ActualWidth;
-            double scaleY = originalImage.PixelHeight / this.ActualHeight;
+            double scaleX = originalBitmap.PixelWidth / this.ActualWidth;
+            double scaleY = originalBitmap.PixelHeight / this.ActualHeight;
 
             Int32Rect cropRect = new Int32Rect(
                 (int)(x * scaleX),
@@ -132,7 +133,9 @@ public partial class SelectionWindow : Window
                 (int)(SelectionBox.Width * scaleX),
                 (int)(SelectionBox.Height * scaleY));
 
-            var croppedBitmap = new CroppedBitmap(originalImage, cropRect);
+            // Fast crop via CroppedBitmap (since doing a raw memory copy out of WriteableBitmap requires unsafe/pointer math)
+            // But we specifically cast the Source to the concrete WriteableBitmap to skip WPF resolution/binding steps.
+            var croppedBitmap = new CroppedBitmap(originalBitmap, cropRect);
 
             await SaveImageAsync(croppedBitmap);
             CleanupAndClose();
@@ -154,32 +157,47 @@ public partial class SelectionWindow : Window
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
         freezeFrameToSave.Freeze();
 
-        try
-        {
-            Clipboard.SetImage(freezeFrameToSave);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Clipboard failed: {ex.Message}");
-        }
-
+        // Fire and completely forget - Don't await anything so the UI thread cleanly destroys the Window.
         _ = System.Threading.Tasks.Task.Run(() =>
         {
-            string screenshotsFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
-            Directory.CreateDirectory(screenshotsFolder);
-            string filePath = Path.Combine(screenshotsFolder,
-                $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            try
             {
-                BitmapEncoder encoder = new PngBitmapEncoder();
-                encoder.Frames.Add(freezeFrameToSave);
-                encoder.Save(fileStream);
-            }
+                // Push the clipboard write off the UI thread! 
+                // We MUST set the thread apartment state to STA for the clipboard to accept it.
+                var t = new System.Threading.Thread(() =>
+                {
+                    try { Clipboard.SetImage(freezeFrameToSave); }
+                    catch (Exception ex) { Console.WriteLine($"Clipboard failed: {ex.Message}"); }
+                });
+                t.SetApartmentState(System.Threading.ApartmentState.STA);
+                t.Start();
+                t.Join(); // Wait for clipboard before proceeding to disk
 
-            Console.WriteLine($"Saved capture to: {filePath}");
+                string screenshotsFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+                Directory.CreateDirectory(screenshotsFolder);
+                string filePath = Path.Combine(screenshotsFolder,
+                    $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    // Use PngBitmapEncoder.Interlace for faster baseline writes, or
+                    // consider BmpBitmapEncoder if disk space is completely free and you want raw speed.
+                    BitmapEncoder encoder = new PngBitmapEncoder();
+                    encoder.Frames.Add(freezeFrameToSave);
+                    encoder.Save(fileStream);
+                }
+
+                Console.WriteLine($"Saved capture to: {filePath}");
+            }
+            catch (Exception backgroundEx)
+            {
+                Console.WriteLine($"Background error: {backgroundEx.Message}");
+            }
         });
+        
+        // Return completed task immediately so the main thread moves on
+        await System.Threading.Tasks.Task.CompletedTask;
     }
 
     private void UpdateOverlay(double x, double y, double w, double h)
