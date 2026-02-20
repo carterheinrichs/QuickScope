@@ -128,11 +128,16 @@ public partial class SelectionWindow : Window
     {
         //Close();
         this.Hide();
+        
+        // prevent ghosting pleasesese
+        FrozenScreenImage.Source = null;
+        
        // take a reset man
        SelectionBox.Visibility = Visibility.Collapsed;
        SelectionBox.Width = 0;
        SelectionBox.Height = 0;
        
+       // prevent 
        GC.Collect();
     }
 
@@ -159,6 +164,7 @@ public partial class SelectionWindow : Window
                 encoder.Frames.Add(freezeFrameToSave);
                 encoder.Save(fileStream);
             }
+            Console.WriteLine($"Saved capture to: {filePath}");
         });
     }
         
