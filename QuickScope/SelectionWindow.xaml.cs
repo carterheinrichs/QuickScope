@@ -169,29 +169,33 @@ public partial class SelectionWindow : Window
 
     private async System.Threading.Tasks.Task SaveImageAsync(BitmapSource freezeFrame)
     {
-        // 3. Play the sound (Only if allowed)
+        // 3. Play the dynamically embedded sound!
         if (Models.SettingsManager.Current.PlaySnapSound)
         {
-            //System.Media.SystemSounds.Beep.Play(); 
-            // Pro tip: Replace ^ with new System.Media.SoundPlayer("snap.wav").Play(); if you add a file!
             try
             {
-                var resourceInfo =
-                    Application.GetResourceStream(new Uri("pack://application:,,,/Resources/gun-gunshot-01.wav"));
-                if (resourceInfo != null)
+                string soundName = Models.SettingsManager.Current.SelectedSound;
+                if (!string.IsNullOrEmpty(soundName))
                 {
-                    using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(resourceInfo.Stream))
+                    // Convert back to the full manifest namespace path
+                    string manifestPath = $"QuickScope.Resources.{soundName}";
+                    var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(manifestPath);
+
+                    if (stream != null)
                     {
-                        player.Load();
-                        player.Play();
+                        using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(stream))
+                        {
+                            player.Load();
+                            player.Play();
+                        }
+                    }
+                    else
+                    {
+                        System.Media.SystemSounds.Beep.Play();
                     }
                 }
-                else
-                {
-                    System.Media.SystemSounds.Beep.Play();
-                }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 System.Media.SystemSounds.Beep.Play();
             }

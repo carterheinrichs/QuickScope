@@ -11,6 +11,7 @@ public class AppSettings
     public string BorderColorHex { get; set; } = "#FFFFFF";
     public bool ShowCrosshair { get; set; } = true;
     public bool PlaySnapSound { get; set; } = true;
+    public string SelectedSound { get; set; } = "gun-gunshot-01.wav";
 
     [System.Text.Json.Serialization.JsonIgnore]
     public SolidColorBrush BorderBrush
