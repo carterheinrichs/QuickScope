@@ -89,8 +89,6 @@ public partial class SelectionWindow : Window
         {
             var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
             
-            CleanupAndClose();
-            
             SaveImage(freezeFrame);
         }
     }
@@ -104,8 +102,6 @@ public partial class SelectionWindow : Window
 
             var originalImage = (BitmapSource)FrozenScreenImage.Source;
             
-            CleanupAndClose();
-
             // Calculate DPI scaling ratio (WPF layout sizes vs Actual Image Pixels)
             double scaleX = originalImage.PixelWidth / this.ActualWidth;
             double scaleY = originalImage.PixelHeight / this.ActualHeight;
@@ -132,6 +128,12 @@ public partial class SelectionWindow : Window
     {
         //Close();
         this.Hide();
+       // take a reset man
+       SelectionBox.Visibility = Visibility.Collapsed;
+       SelectionBox.Width = 0;
+       SelectionBox.Height = 0;
+       
+       GC.Collect();
     }
 
     private void SaveImage(BitmapSource freezeFrame)
@@ -139,20 +141,42 @@ public partial class SelectionWindow : Window
         // save to clipboard
         Clipboard.SetImage(freezeFrame);
         
-        // save to disk
-        string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
-        Directory.CreateDirectory(screenshotsFolder);
-        string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
-
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
+        freezeFrameToSave.Freeze();
+        
+        
+        CleanupAndClose();
+        
+        System.Threading.Tasks.Task.Run(() => 
         {
-            BitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(freezeFrame));
-            encoder.Save(fileStream);
-        }
+            string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+            Directory.CreateDirectory(screenshotsFolder);
+            string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
 
-        Console.WriteLine($"Saved capture to: {filePath}");
-        
-        
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(freezeFrameToSave);
+                encoder.Save(fileStream);
+            }
+        });
     }
+        
+        // save to disk
+        //string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+        //Directory.CreateDirectory(screenshotsFolder);
+        //string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+
+        //using (var fileStream = new FileStream(filePath, FileMode.Create))
+        //{
+            //BitmapEncoder encoder = new PngBitmapEncoder();
+            //encoder.Frames.Add(BitmapFrame.Create(freezeFrame));
+            //encoder.Save(fileStream);
+        //}
+
+        //Console.WriteLine($"Saved capture to: {filePath}");
+        
+        
+        
+        
 }
