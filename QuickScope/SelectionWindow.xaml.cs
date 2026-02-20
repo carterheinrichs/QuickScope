@@ -143,14 +143,22 @@ public partial class SelectionWindow : Window
 
     private void SaveImage(BitmapSource freezeFrame)
     {
-        // save to clipboard
-        Clipboard.SetImage(freezeFrame);
-        
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
         freezeFrameToSave.Freeze();
         
         
         CleanupAndClose();
+
+        try
+        {
+            // save to clipboard
+            Clipboard.SetImage(freezeFrame);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Clipboard failed: {ex.Message}");
+        }
         
         System.Threading.Tasks.Task.Run(() => 
         {

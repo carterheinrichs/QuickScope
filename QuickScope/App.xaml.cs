@@ -64,10 +64,10 @@ public partial class App : Application
         _selectionWindow = new SelectionWindow();
         
         // force WPF to build the window handle invisibly
-        _selectionWindow.Opacity = 0;
-        _selectionWindow.Show();
-        _selectionWindow.Hide();
-        _selectionWindow.Opacity = 1;
+        //_selectionWindow.Opacity = 0;
+        //_selectionWindow.Show();
+        //_selectionWindow.Hide();
+        //_selectionWindow.Opacity = 1;
 
         Task.Run(() =>
         {
