@@ -21,15 +21,35 @@ public partial class SelectionWindow : Window
     
     public void ShowFreeze(BitmapSource freezeFrame)
     {
-        FrozenScreenImage.Source = freezeFrame;
-        
         //reset the box
         SelectionBox.Visibility = Visibility.Collapsed;
         SelectionBox.Width = 0;
         SelectionBox.Height = 0;
+
+        // cover the window
+        double safeW = SystemParameters.PrimaryScreenWidth * 2;
+        double safeH = SystemParameters.PrimaryScreenHeight * 2;
+
+        Canvas.SetLeft(DimTop, 0);
+        Canvas.SetTop(DimTop, 0);
+        DimTop.Width = safeW;
+        DimTop.Height = safeH;
+
+        DimLeft.Width = DimLeft.Height = 0;
+        DimRight.Width = DimRight.Height = 0;
+        DimBottom.Width = DimBottom.Height = 0;
+
+        FrozenScreenImage.Source = freezeFrame;
+
+        this.Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
         
         this.Show();
         this.Activate(); // come up to the front of the class
+
+        
+        // Once layout is done, recalculate overlay properly using actual dimensions
+        OverlayCanvas.SizeChanged -= OnOverlayCanvasSizeChangedOnce;
+        OverlayCanvas.SizeChanged += OnOverlayCanvasSizeChangedOnce;
     }
     
     private void Window_MouseDown(object sender, MouseButtonEventArgs e)
@@ -62,6 +82,8 @@ public partial class SelectionWindow : Window
             Canvas.SetTop(SelectionBox, y);
             SelectionBox.Width = width;
             SelectionBox.Height = height;
+            
+            UpdateOverlay(Canvas.GetLeft(SelectionBox), Canvas.GetTop(SelectionBox), SelectionBox.Width, SelectionBox.Height);
         }
     }
 
@@ -106,6 +128,10 @@ public partial class SelectionWindow : Window
 
             // hide selection box
             SelectionBox.Visibility = Visibility.Collapsed;
+            DimTop.Width = DimTop.Height = 0;
+            DimLeft.Width = DimLeft.Height = 0;
+            DimRight.Width = DimRight.Height = 0;
+            DimBottom.Width = DimBottom.Height = 0;
             
             // Calculate DPI scaling ratio (WPF layout sizes vs Actual Image Pixels)
             double scaleX = originalImage.PixelWidth / this.ActualWidth;
@@ -120,10 +146,9 @@ public partial class SelectionWindow : Window
             var croppedBitmap = new CroppedBitmap(originalImage, cropRect);
             
             
-            await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
+            //await System.Windows.Threading.Dispatcher.Yield(System.Windows.Threading.DispatcherPriority.Render);
             
             await SaveImageAsync(croppedBitmap);
-            
             CleanupAndClose();
         }
         catch (Exception ex)
@@ -136,16 +161,22 @@ public partial class SelectionWindow : Window
     // I knew you would be useful...
     private void CleanupAndClose()
     {
-        //Close();
-        this.Hide();
-        
-        // prevent ghosting pleasesese
-        FrozenScreenImage.Source = null;
-        
        // take a reset man
        SelectionBox.Visibility = Visibility.Collapsed;
        SelectionBox.Width = 0;
        SelectionBox.Height = 0;
+       
+       // dim not tim
+       DimTop.Width = DimTop.Height = 0;
+       DimLeft.Width = DimLeft.Height = 0;
+       DimRight.Width = DimRight.Height = 0;
+       DimBottom.Width = DimBottom.Height = 0;
+       
+       // prevent ghosting pleasesese
+       FrozenScreenImage.Source = null;
+       
+       //Close();
+       this.Hide();
        
        // force wpf to update
        this.UpdateLayout();
@@ -220,22 +251,40 @@ public partial class SelectionWindow : Window
             Console.WriteLine($"Saved capture to: {filePath}");
         });
     }
-        
-        // save to disk
-        //string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
-        //Directory.CreateDirectory(screenshotsFolder);
-        //string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
 
-        //using (var fileStream = new FileStream(filePath, FileMode.Create))
-        //{
-            //BitmapEncoder encoder = new PngBitmapEncoder();
-            //encoder.Frames.Add(BitmapFrame.Create(freezeFrame));
-            //encoder.Save(fileStream);
-        //}
-
-        //Console.WriteLine($"Saved capture to: {filePath}");
+    private void UpdateOverlay(double x, double y, double w, double h)
+    {
+        double canvasWidth = OverlayCanvas.ActualWidth;
+        double canvasHeight = OverlayCanvas.ActualHeight;
         
+        // top strip
+        Canvas.SetLeft(DimTop, 0);
+        Canvas.SetTop(DimTop, 0);
+        DimTop.Width = canvasWidth;
+        DimTop.Height = Math.Max(0, y);
         
+        // bottom 
+        Canvas.SetLeft(DimBottom, 0);
+        Canvas.SetTop(DimBottom, y + h);
+        DimBottom.Width = canvasWidth;
+        DimBottom.Height = Math.Max(0, canvasHeight - y - h);
         
+        // left
+        Canvas.SetLeft(DimLeft, 0);
+        Canvas.SetTop(DimLeft, y);
+        DimLeft.Width = Math.Max(0, x);
+        DimLeft.Height = Math.Max(0, h);
         
+        // right
+        Canvas.SetLeft(DimRight, x + w);
+        Canvas.SetTop(DimRight, y);
+        DimRight.Width = Math.Max(0, canvasWidth - x - w);
+        DimRight.Height = Math.Max(0, h);
+    }
+    
+    private void OnOverlayCanvasSizeChangedOnce(object sender, SizeChangedEventArgs e)
+    {
+        OverlayCanvas.SizeChanged -= OnOverlayCanvasSizeChangedOnce;
+        UpdateOverlay(0, 0, 0, 0);
+    }
 }

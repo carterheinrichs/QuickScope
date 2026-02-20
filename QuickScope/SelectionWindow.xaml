@@ -17,11 +17,13 @@
     <Grid>
         <Image x:Name="FrozenScreenImage" Stretch="Fill" />
         
-        <Canvas Background="#22000000">
-            <Rectangle x:Name="SelectionBox" 
-                       Stroke="White" StrokeThickness="2" 
-                       Fill="#44FFFFFF"
-                       Visibility="Collapsed" />
+        <Canvas x:Name="OverlayCanvas">
+            <Rectangle x:Name="DimTop" Fill="#88000000"/>
+            <Rectangle x:Name="DimLeft" Fill="#88000000"/>
+            <Rectangle x:Name="DimRight" Fill="#88000000"/>
+            <Rectangle x:Name="DimBottom" Fill="#88000000"/>
+            
+            <Rectangle x:Name="SelectionBox" Stroke="White" StrokeThickness="2" Fill="Transparent" Visibility="Collapsed"/> 
         </Canvas>
     </Grid>
 </Window>
