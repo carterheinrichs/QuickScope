@@ -19,5 +19,45 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        LoadCurrentSettings();
+    }
+
+    private void LoadCurrentSettings()
+    {
+        var settings = Models.SettingsManager.Current;
+        CrosshairCheck.IsChecked = settings.ShowCrosshair;
+        SoundCheck.IsChecked = settings.PlaySnapSound;
+        ColorHexBox.Text = settings.BorderColorHex;
+        UpdateColorPreview();
+    }
+
+    private void SettingChanged(object sender, RoutedEventArgs e)
+    {
+        // Ignore initialization
+        if (!IsLoaded) return; 
+
+        Models.SettingsManager.Current.ShowCrosshair = CrosshairCheck.IsChecked == true;
+        Models.SettingsManager.Current.PlaySnapSound = SoundCheck.IsChecked == true;
+        
+        Models.SettingsManager.Save();
+    }
+
+    private void ColorHexBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (!IsLoaded) return;
+
+        UpdateColorPreview();
+        Models.SettingsManager.Current.BorderColorHex = ColorHexBox.Text;
+        Models.SettingsManager.Save();
+    }
+
+    private void UpdateColorPreview()
+    {
+        try
+        {
+            var brush = Models.SettingsManager.Current.BorderBrush;
+            ColorPreview.Fill = brush;
+        }
+        catch { /* Invalid hex, don't update preview */ }
     }
 }

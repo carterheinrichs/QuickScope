@@ -16,6 +16,21 @@ public partial class SelectionWindow : Window
     public SelectionWindow()
     {
         InitializeComponent();
+        
+        var settings = Models.SettingsManager.Current;
+        
+        // 1. Set the Border Color
+        SelectionBox.Stroke = settings.BorderBrush;
+        
+        // 2. Override the mouse cursor if they want a true crosshair
+        if (settings.ShowCrosshair)
+        {
+            this.Cursor = Cursors.Cross;
+        }
+        else
+        {
+            this.Cursor = Cursors.Arrow;
+        }
     }
 
     public void ShowFreeze(BitmapSource freezeFrame)
@@ -154,6 +169,34 @@ public partial class SelectionWindow : Window
 
     private async System.Threading.Tasks.Task SaveImageAsync(BitmapSource freezeFrame)
     {
+        // 3. Play the sound (Only if allowed)
+        if (Models.SettingsManager.Current.PlaySnapSound)
+        {
+            //System.Media.SystemSounds.Beep.Play(); 
+            // Pro tip: Replace ^ with new System.Media.SoundPlayer("snap.wav").Play(); if you add a file!
+            try
+            {
+                var resourceInfo =
+                    Application.GetResourceStream(new Uri("pack://application:,,,/Resources/gun-gunshot-01.wav"));
+                if (resourceInfo != null)
+                {
+                    using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(resourceInfo.Stream))
+                    {
+                        player.Load();
+                        player.Play();
+                    }
+                }
+                else
+                {
+                    System.Media.SystemSounds.Beep.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Media.SystemSounds.Beep.Play();
+            }
+        }
+
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
         freezeFrameToSave.Freeze();
 

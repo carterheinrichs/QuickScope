@@ -49,6 +49,12 @@ public partial class App : Application
     {
         base.OnStartup(e);
         
+        // Load User Settings
+        Models.SettingsManager.Load();
+        
+        var mainWindow = new MainWindow();
+        mainWindow.Show();
+        
         // Register hotkeys
         // Passing IntPtr.Zero attaches the hotkey to the current thread rather than a specific window.
         bool registered = RegisterHotKey(IntPtr.Zero, HOTKEY_ID_CAPTURE, MOD_CONTROL | MOD_SHIFT, VK_S);

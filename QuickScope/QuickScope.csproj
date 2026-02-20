@@ -15,5 +15,9 @@
         <WindowsPackageType>None</WindowsPackageType>
         <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
     </PropertyGroup>
+    <ItemGroup>
+        <None Remove="Resources\gun-gunshot-01.wav" />
+        <Resource Include="Resources\gun-gunshot-01.wav" />
+    </ItemGroup>
 
 </Project>
