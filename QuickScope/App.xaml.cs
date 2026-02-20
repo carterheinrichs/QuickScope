@@ -88,10 +88,24 @@ public partial class App : Application
         // intercept the WM_HOTKEY message
         if (msg.message == WM_HOTKEY && msg.wParam.ToInt32() == HOTKEY_ID_CAPTURE)
         {
-            BitmapSource freezeFrame = CaptureService.CaptureInstant();
-            _selectionWindow.ShowFreeze(freezeFrame);
             handled = true;
+            
+            // Launch the capture safely in the background so we don't block the UI thread
+            _ = TriggerCaptureAsync();
         }
+    }
+
+    private async Task TriggerCaptureAsync()
+    {
+        // we MUST hide it and give Windows a moment to physically erase it before capturing.
+        if (_selectionWindow.IsVisible)
+        {
+            _selectionWindow.Hide();
+            await Task.Delay(50); // Give Windows 50ms to draw the clean desktop
+        }
+
+        BitmapSource freezeFrame = CaptureService.CaptureInstant();
+        _selectionWindow.ShowFreeze(freezeFrame);
     }
 
     protected override void OnExit(ExitEventArgs e)

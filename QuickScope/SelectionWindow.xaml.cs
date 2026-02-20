@@ -83,17 +83,17 @@ public partial class SelectionWindow : Window
         }
     }
 
-    private void Window_KeyDown(object sender, KeyEventArgs e)
+    private async void Window_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Escape)
         {
             var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
             
-            SaveImage(freezeFrame);
+            await SaveImageAsync(freezeFrame);
         }
     }
 
-    private void CropAndSave()
+    private async void CropAndSave()
     {
         try
         {
@@ -114,7 +114,7 @@ public partial class SelectionWindow : Window
 
             var croppedBitmap = new CroppedBitmap(originalImage, cropRect);
             
-            SaveImage(croppedBitmap);
+            await SaveImageAsync(croppedBitmap);
         }
         catch (Exception ex)
         {
@@ -140,7 +140,46 @@ public partial class SelectionWindow : Window
        // prevent 
        GC.Collect();
     }
+    
+    private async System.Threading.Tasks.Task SaveImageAsync(BitmapSource freezeFrame)
+    {
+        //  Lock the image in memory FIRST
+        var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
+        freezeFrameToSave.Freeze();
+        
+        // HIDE THE WINDOW
+        CleanupAndClose();
+        
+        // forces Windows to physically erase the window from your monitor before we proceed.
+        await System.Threading.Tasks.Task.Delay(50);
+        
+        // copy to the clipboard (the screen is already clean!)
+        try 
+        {
+            Clipboard.SetImage(freezeFrameToSave);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Clipboard failed: {ex.Message}");
+        }
+        
+        // Save to disk in the background
+        _ = System.Threading.Tasks.Task.Run(() => 
+        {
+            string screenshotsFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
+            Directory.CreateDirectory(screenshotsFolder);
+            string filePath = Path.Combine(screenshotsFolder, $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
 
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                BitmapEncoder encoder = new PngBitmapEncoder();
+                encoder.Frames.Add(freezeFrameToSave);
+                encoder.Save(fileStream);
+            }
+            Console.WriteLine($"Saved capture to: {filePath}");
+        });
+    }
+    
     private void SaveImage(BitmapSource freezeFrame)
     {
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
