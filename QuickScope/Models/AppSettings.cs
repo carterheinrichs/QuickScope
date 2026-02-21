@@ -13,6 +13,11 @@ public class AppSettings
     public bool PlaySnapSound { get; set; } = true;
     public string SelectedSound { get; set; } = "gun-gunshot-01.wav";
 
+    // CS-Style Crosshair Settings
+    public double CrosshairSize { get; set; } = 15;
+    public double CrosshairThickness { get; set; } = 2;
+    public double CrosshairGap { get; set; } = 5;
+
     [System.Text.Json.Serialization.JsonIgnore]
     public SolidColorBrush BorderBrush
     {

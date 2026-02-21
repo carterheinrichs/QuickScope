@@ -5,20 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QuickScope"
         mc:Ignorable="d"
-        Title="QuickScope Settings" Height="250" Width="400"
+        Title="QuickScope Settings" Height="360" Width="400"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
     
-    <StackPanel Margin="20" Background="#F5F5F5">
-        <TextBlock Text="QuickScope Options" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+        <StackPanel Margin="20" Background="#F5F5F5">
+            <TextBlock Text="QuickScope Options" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
-        <CheckBox x:Name="CrosshairCheck" Content="Show Sniper Crosshair Cursor" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
-        
-        <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
-            <CheckBox x:Name="SoundCheck" Content="Play 'Snap' Sound on Capture" VerticalAlignment="Center" Checked="SettingChanged" Unchecked="SettingChanged"/>
-            <ComboBox x:Name="SoundDropdown" Width="100" Margin="10,0,0,0" SelectionChanged="SoundDropdown_SelectionChanged"/>
-        </StackPanel>
+            <CheckBox x:Name="CrosshairCheck" Content="Show Custom CS:GO Crosshair" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
+            
+            <StackPanel Margin="20,0,0,10">
+                <TextBlock Text="Crosshair Size / Thinkness / Gap" Foreground="Gray" FontSize="10"/>
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <Slider x:Name="SizeSlider" Minimum="2" Maximum="50" Value="15" Width="80" ValueChanged="Slider_ValueChanged" ToolTip="Size"/>
+                    <Slider x:Name="ThickSlider" Minimum="1" Maximum="10" Value="2" Width="80" Margin="10,0,0,0" ValueChanged="Slider_ValueChanged" ToolTip="Thickness"/>
+                    <Slider x:Name="GapSlider" Minimum="0" Maximum="40" Value="5" Width="80" Margin="10,0,0,0" ValueChanged="Slider_ValueChanged" ToolTip="Gap"/>
+                </StackPanel>
+            </StackPanel>
 
-        <TextBlock Text="Selection Border Color (Hex):" Margin="0,5,0,2"/>
+            <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
+                <CheckBox x:Name="SoundCheck" Content="Play Capture Sound" VerticalAlignment="Center" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                <ComboBox x:Name="SoundDropdown" Width="120" Margin="10,0,0,0" SelectionChanged="SoundDropdown_SelectionChanged"/>
+            </StackPanel>
+
+        <TextBlock Text="Selection Border/Crosshair Color (Hex):" Margin="0,5,0,2"/>
         <StackPanel Orientation="Horizontal">
             <TextBox x:Name="ColorHexBox" Width="100" Text="#FFFFFF" TextChanged="ColorHexBox_TextChanged"/>
             <Rectangle x:Name="ColorPreview" Width="20" Height="20" Margin="10,0,0,0" Fill="White" Stroke="Black"/>

@@ -30,8 +30,22 @@ public partial class MainWindow : Window
         SoundCheck.IsChecked = settings.PlaySnapSound;
         ColorHexBox.Text = settings.BorderColorHex;
         
+        SizeSlider.Value = settings.CrosshairSize;
+        ThickSlider.Value = settings.CrosshairThickness;
+        GapSlider.Value = settings.CrosshairGap;
+        
         LoadEmbeddedAudioFiles(settings.SelectedSound);
         UpdateColorPreview();
+    }
+
+    private void Slider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!IsLoaded) return;
+
+        Models.SettingsManager.Current.CrosshairSize = SizeSlider.Value;
+        Models.SettingsManager.Current.CrosshairThickness = ThickSlider.Value;
+        Models.SettingsManager.Current.CrosshairGap = GapSlider.Value;
+        Models.SettingsManager.Save();
     }
 
     private void LoadEmbeddedAudioFiles(string savedSound)
@@ -92,6 +106,8 @@ public partial class MainWindow : Window
         
         Models.SettingsManager.Current.SelectedSound = SoundDropdown.SelectedItem.ToString()!;
         Models.SettingsManager.Save();
+        
+        Services.AudioService.Initialize(Models.SettingsManager.Current.SelectedSound);
     }
 
     private void ColorHexBox_TextChanged(object sender, TextChangedEventArgs e)

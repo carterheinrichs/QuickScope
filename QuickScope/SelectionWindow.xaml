@@ -24,6 +24,14 @@
             <Rectangle x:Name="DimBottom" Fill="#88000000"/>
             
             <Rectangle x:Name="SelectionBox" Stroke="White" StrokeThickness="2" Fill="Transparent" Visibility="Collapsed"/> 
+
+            <!-- Custom Rendering CS Crosshair! -->
+            <Canvas x:Name="CustomCrosshair" IsHitTestVisible="False" Visibility="Collapsed">
+                <Rectangle x:Name="CrossTop" Fill="White" />
+                <Rectangle x:Name="CrossBottom" Fill="White" />
+                <Rectangle x:Name="CrossLeft" Fill="White" />
+                <Rectangle x:Name="CrossRight" Fill="White" />
+            </Canvas>
         </Canvas>
     </Grid>
 </Window>

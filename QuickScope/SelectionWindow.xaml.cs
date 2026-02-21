@@ -12,6 +12,7 @@ public partial class SelectionWindow : Window
 {
     private Point _startPoint;
     private bool _isSelecting = false;
+    private bool _useCustomCrosshair = false;
 
     public SelectionWindow()
     {
@@ -22,10 +23,37 @@ public partial class SelectionWindow : Window
         // 1. Set the Border Color
         SelectionBox.Stroke = settings.BorderBrush;
         
-        // 2. Override the mouse cursor if they want a true crosshair
-        if (settings.ShowCrosshair)
+        _useCustomCrosshair = settings.ShowCrosshair;
+
+        if (_useCustomCrosshair)
         {
-            this.Cursor = Cursors.Cross;
+            this.Cursor = Cursors.None; // Hide hardware cursor entirely!
+            CustomCrosshair.Visibility = Visibility.Visible;
+                
+            // Color the crosshair identically to the border
+            CrossTop.Fill = CrossBottom.Fill = CrossLeft.Fill = CrossRight.Fill = settings.BorderBrush;
+
+            // Setup geometry from our Settings (Size, Thickness, Gap)
+            double size = settings.CrosshairSize;
+            double thick = settings.CrosshairThickness;
+            double gap = settings.CrosshairGap;
+            double centerOffset = thick / 2.0;
+
+            // Top Line
+            CrossTop.Width = thick; CrossTop.Height = size;
+            Canvas.SetLeft(CrossTop, -centerOffset); Canvas.SetTop(CrossTop, -gap - size);
+
+            // Bottom Line
+            CrossBottom.Width = thick; CrossBottom.Height = size;
+            Canvas.SetLeft(CrossBottom, -centerOffset); Canvas.SetTop(CrossBottom, gap);
+
+            // Left Line
+            CrossLeft.Width = size; CrossLeft.Height = thick;
+            Canvas.SetLeft(CrossLeft, -gap - size); Canvas.SetTop(CrossLeft, -centerOffset);
+
+            // Right Line
+            CrossRight.Width = size; CrossRight.Height = thick;
+            Canvas.SetLeft(CrossRight, gap); Canvas.SetTop(CrossRight, -centerOffset);
         }
         else
         {
@@ -84,10 +112,16 @@ public partial class SelectionWindow : Window
 
     private void Window_MouseMove(object sender, MouseEventArgs e)
     {
+        Point currentPoint = e.GetPosition(this);
+
+        if (_useCustomCrosshair)
+        {
+            Canvas.SetLeft(CustomCrosshair, currentPoint.X);
+            Canvas.SetTop(CustomCrosshair, currentPoint.Y);
+        }
+        
         if (_isSelecting)
         {
-            Point currentPoint = e.GetPosition(this);
-
             double x = Math.Min(currentPoint.X, _startPoint.X);
             double y = Math.Min(currentPoint.Y, _startPoint.Y);
             double width = Math.Max(currentPoint.X, _startPoint.X) - x;
@@ -110,6 +144,7 @@ public partial class SelectionWindow : Window
 
             if (SelectionBox.Width > 5 && SelectionBox.Height > 5)
             {
+                PlayShutterSound();
                 CropAndSave();
             }
             else
@@ -123,9 +158,25 @@ public partial class SelectionWindow : Window
     {
         if (e.Key == Key.Escape)
         {
+            PlayShutterSound();
             var freezeFrame = (BitmapSource)FrozenScreenImage.Source;
             await SaveImageAsync(freezeFrame);
             CleanupAndClose();
+        }
+    }
+    
+    private void PlayShutterSound()
+    {
+        if (Models.SettingsManager.Current.PlaySnapSound)
+        {
+            try
+            {
+                QuickScope.Services.AudioService.PlayShutter();
+            }
+            catch (Exception)
+            {
+                System.Media.SystemSounds.Beep.Play();
+            }
         }
     }
 
@@ -164,47 +215,16 @@ public partial class SelectionWindow : Window
     private void CleanupAndClose()
     {
         FrozenScreenImage.Source = null;
+
         this.Close();
     }
 
     private async System.Threading.Tasks.Task SaveImageAsync(BitmapSource freezeFrame)
     {
-        // 3. Play the dynamically embedded sound!
-        if (Models.SettingsManager.Current.PlaySnapSound)
-        {
-            try
-            {
-                string soundName = Models.SettingsManager.Current.SelectedSound;
-                if (!string.IsNullOrEmpty(soundName))
-                {
-                    // Convert back to the full manifest namespace path
-                    string manifestPath = $"QuickScope.Resources.{soundName}";
-                    var stream = System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(manifestPath);
-
-                    if (stream != null)
-                    {
-                        using (System.Media.SoundPlayer player = new System.Media.SoundPlayer(stream))
-                        {
-                            player.Load();
-                            player.Play();
-                        }
-                    }
-                    else
-                    {
-                        System.Media.SystemSounds.Beep.Play();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                System.Media.SystemSounds.Beep.Play();
-            }
-        }
-
         var freezeFrameToSave = BitmapFrame.Create(freezeFrame);
         freezeFrameToSave.Freeze();
 
-        // Fire and completely forget - Don't await anything so the UI thread cleanly destroys the Window.
+         // Fire and completely forget - Don't await anything so the UI thread cleanly destroys the Window.
         _ = System.Threading.Tasks.Task.Run(() =>
         {
             try

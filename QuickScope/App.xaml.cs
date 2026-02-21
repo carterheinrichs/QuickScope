@@ -52,6 +52,8 @@ public partial class App : Application
         // Load User Settings
         Models.SettingsManager.Load();
         
+        AudioService.Initialize(Models.SettingsManager.Current.SelectedSound);
+        
         var mainWindow = new MainWindow();
         mainWindow.Show();
         
