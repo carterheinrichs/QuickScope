@@ -14,10 +14,14 @@
 
         <WindowsPackageType>None</WindowsPackageType>
         <EnableCoreMrtTooling>false</EnableCoreMrtTooling>
+
+        <ApplicationIcon>Resources\QS.ico</ApplicationIcon>
     </PropertyGroup>
     <ItemGroup>
         <None Remove="Resources\**\*.wav" />
         <EmbeddedResource Include="Resources\**\*.wav" />
+
+        <Resource Include="Resources\QS.ico" />
     </ItemGroup>
 
 </Project>

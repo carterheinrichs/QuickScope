@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:QuickScope"
         mc:Ignorable="d"
         Title="QuickScope Settings" Height="360" Width="400"
-        WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Icon="pack://application:,,,/Resources/QS.ico">
     
         <StackPanel Margin="20" Background="#F5F5F5">
             <TextBlock Text="QuickScope Options" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
