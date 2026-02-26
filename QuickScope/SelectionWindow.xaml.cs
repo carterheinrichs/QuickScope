@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace QuickScope;
@@ -31,13 +30,27 @@ public partial class SelectionWindow : Window
             CustomCrosshair.Visibility = Visibility.Visible;
                 
             // Color the crosshair identically to the border
-            CrossTop.Fill = CrossBottom.Fill = CrossLeft.Fill = CrossRight.Fill = settings.BorderBrush;
+            CrossTop.Fill = CrossBottom.Fill = CrossLeft.Fill = CrossRight.Fill = CrossCenter.Fill = settings.BorderBrush;
 
             // Setup geometry from our Settings (Size, Thickness, Gap)
             double size = settings.CrosshairSize;
             double thick = settings.CrosshairThickness;
             double gap = settings.CrosshairGap;
             double centerOffset = thick / 2.0;
+            
+            // center dot
+            if (settings.CrosshairCenter)
+            {
+                CrossCenter.Visibility = Visibility.Visible;
+                CrossCenter.Width = thick;
+                CrossCenter.Height = thick;
+                Canvas.SetLeft(CrossCenter, -centerOffset);
+                Canvas.SetTop(CrossCenter, -centerOffset);
+            }
+            else
+            {
+                CrossCenter.Visibility = Visibility.Collapsed;
+            }
 
             // Top Line
             CrossTop.Width = thick; CrossTop.Height = size;
@@ -171,7 +184,7 @@ public partial class SelectionWindow : Window
         {
             try
             {
-                QuickScope.Services.AudioService.PlayShutter();
+                Services.AudioService.PlayShutter();
             }
             catch (Exception)
             {

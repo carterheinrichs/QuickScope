@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:local="clr-namespace:QuickScope"
         mc:Ignorable="d"
         Title="SelectionWindow" Height="450" Width="800"
         WindowStyle="None" WindowState="Maximized"
@@ -31,6 +30,7 @@
                 <Rectangle x:Name="CrossBottom" Fill="White" />
                 <Rectangle x:Name="CrossLeft" Fill="White" />
                 <Rectangle x:Name="CrossRight" Fill="White" />
+                <Rectangle x:Name="CrossCenter" Fill="White" />
             </Canvas>
         </Canvas>
     </Grid>

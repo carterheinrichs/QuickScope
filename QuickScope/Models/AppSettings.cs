@@ -17,6 +17,7 @@ public class AppSettings
     public double CrosshairSize { get; set; } = 15;
     public double CrosshairThickness { get; set; } = 2;
     public double CrosshairGap { get; set; } = 5;
+    public bool CrosshairCenter { get; set; } = true;
 
     [System.Text.Json.Serialization.JsonIgnore]
     public SolidColorBrush BorderBrush
@@ -40,7 +41,7 @@ public class AppSettings
 public static class SettingsManager
 {
     private static readonly string SettingsFile = Path.Combine(
-        System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData),
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "QuickScope", "settings.json");
     
     public static AppSettings Current { get; private set; } = new AppSettings();
