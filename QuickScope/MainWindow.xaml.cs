@@ -88,6 +88,7 @@ public partial class MainWindow : Window
 
         Models.SettingsManager.Current.ShowCrosshair = CrosshairCheck.IsChecked == true;
         Models.SettingsManager.Current.PlaySnapSound = SoundCheck.IsChecked == true;
+        Models.SettingsManager.Current.CrosshairCenter = CrosshairCenter.IsChecked == true;
         
         Models.SettingsManager.Save();
     }

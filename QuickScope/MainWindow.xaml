@@ -21,6 +21,7 @@
                     <Slider x:Name="GapSlider" Minimum="0" Maximum="40" Value="5" Width="80" Margin="10,0,0,0" ValueChanged="Slider_ValueChanged" ToolTip="Gap"/>
                 </StackPanel>
             </StackPanel>
+            <CheckBox x:Name="CrosshairCenter" Content="Crosshair Center Dot" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
                 <CheckBox x:Name="SoundCheck" Content="Play Capture Sound" VerticalAlignment="Center" Checked="SettingChanged" Unchecked="SettingChanged"/>
