@@ -31,7 +31,7 @@
                 <Rectangle x:Name="CrossLeft" Fill="White" />
                 <Rectangle x:Name="CrossRight" Fill="White" />
                 <Rectangle x:Name="CrossCenter" Fill="White" />
-                <Ellipse x:Name="CrossBorder" Fill="White" />
+                <Ellipse x:Name="CrossBorder" Fill="Transparent" Stroke="White" StrokeThickness="2"/>
             </Canvas>
         </Canvas>
     </Grid>
