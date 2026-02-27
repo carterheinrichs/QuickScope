@@ -4,11 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="QuickScope Settings" Height="360" Width="400"
+        Title="QuickScope Settings" Height="380" Width="400"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         Icon="pack://application:,,,/Resources/QS.ico">
     
-        <StackPanel Margin="20" Background="#F5F5F5">
+        <StackPanel Margin="5"> 
             <TextBlock Text="QuickScope Options" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
 
             <CheckBox x:Name="CrosshairCheck" Content="Show Custom CS:GO Crosshair" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
@@ -21,7 +21,10 @@
                     <Slider x:Name="GapSlider" Minimum="0" Maximum="40" Value="5" Width="80" Margin="10,0,0,0" ValueChanged="Slider_ValueChanged" ToolTip="Gap"/>
                 </StackPanel>
             </StackPanel>
-            <CheckBox x:Name="CrosshairCenter" Content="Crosshair Center Dot" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
+            <StackPanel Margin="20,0,0,10">
+                <CheckBox x:Name="CrosshairCenter" Content="Crosshair Center Dot" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
+                <CheckBox x:Name="CrosshairBorder" Content="Crosshair border" Margin="0,5" Checked="SettingChanged" Unchecked="SettingChanged"/>
+            </StackPanel>
 
             <StackPanel Orientation="Horizontal" Margin="0,5,0,15">
                 <CheckBox x:Name="SoundCheck" Content="Play Capture Sound" VerticalAlignment="Center" Checked="SettingChanged" Unchecked="SettingChanged"/>
