@@ -56,11 +56,13 @@ public partial class SelectionWindow : Window
             if (settings.CrosshairBorder)
             {
                 CrossBorder.Visibility = Visibility.Visible;
-                CrossBorder.Width = thick;
-                CrossBorder.Height = thick;
+                CrossBorder.Stroke = settings.BorderBrush;
                 //Canvas.TopProperty(CrossBorder, -centerOffset);
-                Canvas.SetLeft(CrossBorder, -centerOffset);
-                Canvas.SetTop(CrossBorder, -centerOffset);
+                double circleSize = (settings.CrosshairGap + settings.CrosshairSize) * 2;
+                CrossBorder.Width = circleSize;
+                CrossBorder.Height = circleSize;
+                Canvas.SetLeft(CrossBorder, -(circleSize / 2));
+                Canvas.SetTop(CrossBorder, -(circleSize / 2));
             }
             else
             {
