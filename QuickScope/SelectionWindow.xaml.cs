@@ -30,7 +30,7 @@ public partial class SelectionWindow : Window
             CustomCrosshair.Visibility = Visibility.Visible;
                 
             // Color the crosshair identically to the border
-            CrossTop.Fill = CrossBottom.Fill = CrossLeft.Fill = CrossRight.Fill = CrossCenter.Fill = settings.BorderBrush;
+            CrossTop.Fill = CrossBottom.Fill = CrossLeft.Fill = CrossRight.Fill = CrossCenter.Fill = CrossBorder.Fill = settings.BorderBrush;
 
             // Setup geometry from our Settings (Size, Thickness, Gap)
             double size = settings.CrosshairSize;
@@ -50,6 +50,21 @@ public partial class SelectionWindow : Window
             else
             {
                 CrossCenter.Visibility = Visibility.Collapsed;
+            }
+            
+            // border
+            if (settings.CrosshairBorder)
+            {
+                CrossBorder.Visibility = Visibility.Visible;
+                CrossBorder.Width = thick;
+                CrossBorder.Height = thick;
+                //Canvas.TopProperty(CrossBorder, -centerOffset);
+                Canvas.SetLeft(CrossBorder, -centerOffset);
+                Canvas.SetTop(CrossBorder, -centerOffset);
+            }
+            else
+            {
+                CrossBorder.Visibility = Visibility.Collapsed;
             }
 
             // Top Line
