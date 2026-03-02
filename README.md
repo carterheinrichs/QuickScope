@@ -1,5 +1,10 @@
 # QuickScope
-QuickScope is a lightweight, instantaneous-ish screen capture tool designed for speed and simplicity. With some nice features.
+QuickScope is a lightweight, 
+instantaneous-ish screen capture tool designed for speed and simplicity. 
+With some nice features.
+I made it to be a simple screenshot tool,
+to be similar to the ease of use of tools like the Snipping Tool in Edge or Snagit.
+But less overhead and stuff I don't need.
 
 ## Features
 * **Instant Capture**: Uses native GDI+ BitBlt for near-instantaneous screen freezing.
@@ -7,7 +12,7 @@ QuickScope is a lightweight, instantaneous-ish screen capture tool designed for 
 * **Full Screen Capture**: Press `ESCAPE` to capture the full screen.
 * **Automatic Saving**: Screenshots are automatically saved as PNG files to your Pictures/Screenshots folder.
 * **Clipboard Integration**: Every capture is automatically copied to the system clipboard for immediate use.
-* **Settings**: Customizable settings for colour, reticle, and sounds.
+* **Settings**: Customizable settings for color, reticle, and sounds.
 
 ## Usage
 1. Run the application.
@@ -18,4 +23,3 @@ QuickScope is a lightweight, instantaneous-ish screen capture tool designed for 
 
 ## Requirements
 * Windows 10 or later.
-* .NET 10.0 Runtime?
