@@ -6,6 +6,8 @@ I made it to be a simple screenshot tool,
 to be similar to the ease of use of tools like the Snipping Tool in Edge or Snagit.
 But less overhead and stuff I don't need.
 
+<img width="854" height="480" alt="QuickScopeDemo" src="https://github.com/user-attachments/assets/f3027c9f-04dc-485a-b570-99af945ec739" />
+
 ## Features
 * **Instant Capture**: Uses native GDI+ BitBlt for near-instantaneous screen freezing.
 * **Region Selection**: Click and drag to select a specific area of the screen to crop.
