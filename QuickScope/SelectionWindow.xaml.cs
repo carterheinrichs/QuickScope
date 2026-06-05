@@ -281,7 +281,7 @@ public partial class SelectionWindow : Window
                     Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Screenshots");
                 Directory.CreateDirectory(screenshotsFolder);
                 string filePath = Path.Combine(screenshotsFolder,
-                    $"QuickScope_{DateTime.Now:yyyyMMdd_HHmmss}.png");
+                    $"QuickScope_{DateTime.Now:MMddyyyy_HHmmss}.png");
 
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
