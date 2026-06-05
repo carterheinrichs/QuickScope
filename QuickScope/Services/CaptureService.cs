@@ -7,23 +7,44 @@ public class CaptureService
 {
     private static System.Drawing.Bitmap? _cachedBitmap;
     private static System.Drawing.Graphics? _cachedGraphics;
+    private static int _virtualLeft;
+    private static int _virtualTop;
     private static int _width;
     private static int _height;
     
     // better?
     public static BitmapSource CaptureInstant()
     {
-        if (_cachedBitmap == null)
+        // get current dimensions of the entire multi-monitor setup if so
+        int currentLeft = (int)SystemParameters.VirtualScreenLeft;
+        int currentTop = (int)SystemParameters.VirtualScreenTop;
+        int currentWidth = (int)SystemParameters.VirtualScreenWidth;
+        int currentHeight = (int)SystemParameters.VirtualScreenHeight;
+        
+        // reallocate cache onlt if screen configs changes or on first run
+        if (_cachedBitmap == null || _width != currentWidth || _height != currentHeight || _virtualLeft != currentLeft || _virtualTop != currentTop)
         {
-            _width = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
-            _height = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+            _virtualLeft = currentLeft;
+            _virtualTop = currentTop;
+            _width = currentWidth;
+            _height = currentHeight;
+            
+            _cachedBitmap?.Dispose();
+            _cachedGraphics?.Dispose();
             
             _cachedBitmap = new System.Drawing.Bitmap(_width, _height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             _cachedGraphics = System.Drawing.Graphics.FromImage(_cachedBitmap);
         }
 
-        // The Native GDI+ BitBlt approach (Instantaneous)
-        _cachedGraphics!.CopyFromScreen(0, 0, 0, 0, _cachedBitmap.Size, System.Drawing.CopyPixelOperation.SourceCopy);
+        // pass the abs left and top BitBlt from screen space coords
+        _cachedGraphics!.CopyFromScreen(
+            _virtualLeft,
+            _virtualTop,
+            0,
+            0,
+            _cachedBitmap.Size,
+            System.Drawing.CopyPixelOperation.SourceCopy
+            );
 
         // Fast conversion to WPF BitmapSource avoiding unmanaged handles (HBITMAP)
         var bitmapData = _cachedBitmap.LockBits(

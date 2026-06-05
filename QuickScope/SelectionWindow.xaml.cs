@@ -104,14 +104,20 @@ public partial class SelectionWindow : Window
         SelectionBox.Visibility = Visibility.Collapsed;
         SelectionBox.Width = 0;
         SelectionBox.Height = 0;
+        
+        // position the window across ALL monitors
+        this.Left = SystemParameters.VirtualScreenLeft;
+        this.Top = SystemParameters.VirtualScreenTop;
+        this.Width = SystemParameters.VirtualScreenWidth;
+        this.Height = SystemParameters.VirtualScreenHeight;
 
         // Set the frozen image
         FrozenScreenImage.Source = freezeFrame;
+        
+        // complete fallback overlay for full canvas
+        double safeW = this.Width;
+        double safeH = this.Height;
 
-        // Full-screen dim from the start (no selection = everything dimmed)
-        // Use oversized values; canvas clips them
-        double safeW = SystemParameters.VirtualScreenWidth * 2;
-        double safeH = SystemParameters.VirtualScreenHeight * 2;
 
         Canvas.SetLeft(DimTop, 0);
         Canvas.SetTop(DimTop, 0);
