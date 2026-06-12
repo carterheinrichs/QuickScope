@@ -3,7 +3,7 @@
 [Setup]
 ; Basic App Info
 AppName=QuickScope
-AppVersion=1.2.0
+AppVersion=1.3.1
 AppPublisher=Carter Heinrichs
 AppPublisherURL=https://github.com/carterheinrichs/QuickScope
 

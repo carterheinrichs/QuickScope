@@ -16,10 +16,10 @@ public class CaptureService
     public static BitmapSource CaptureInstant()
     {
         // get current dimensions of the entire multi-monitor setup if so
-        int currentLeft = (int)SystemParameters.VirtualScreenLeft;
-        int currentTop = (int)SystemParameters.VirtualScreenTop;
-        int currentWidth = (int)SystemParameters.VirtualScreenWidth;
-        int currentHeight = (int)SystemParameters.VirtualScreenHeight;
+        int currentLeft = System.Windows.Forms.SystemInformation.VirtualScreen.Left;
+        int currentTop = System.Windows.Forms.SystemInformation.VirtualScreen.Top;
+        int currentWidth = System.Windows.Forms.SystemInformation.VirtualScreen.Width;
+        int currentHeight = System.Windows.Forms.SystemInformation.VirtualScreen.Height;
         
         // reallocate cache onlt if screen configs changes or on first run
         if (_cachedBitmap == null || _width != currentWidth || _height != currentHeight || _virtualLeft != currentLeft || _virtualTop != currentTop)

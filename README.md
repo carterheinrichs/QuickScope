@@ -5,6 +5,7 @@ With some nice features.
 I made it to be a simple screenshot tool,
 to be similar to the ease of use of tools like the Snipping Tool in Edge or Snagit.
 But less overhead and stuff I don't need.
+Executable is massive but that is because I bake everything needed run it in the application.
 
 <img width="854" height="480" alt="QuickScopeDemo" src="https://github.com/user-attachments/assets/f3027c9f-04dc-485a-b570-99af945ec739" />
 
@@ -25,3 +26,14 @@ But less overhead and stuff I don't need.
 
 ## Requirements
 * Windows 10 or later.
+
+## Devolpment Setup
+* JetBrains Rider
+* Dotnet 10
+* InnoSetu (*to build installer*)
+
+To build to exe install:
+```
+dotnet publish QuickScope\QuickScope.csproj -c Release
+```
+Then run Inno Script
