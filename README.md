@@ -30,10 +30,10 @@ Executable is massive but that is because I bake everything needed run it in the
 ## Devolpment Setup
 * JetBrains Rider
 * Dotnet 10
-* InnoSetu (*to build installer*)
+* InnoSetup (*to build installer*)
 
 To build to exe install:
 ```
 dotnet publish QuickScope\QuickScope.csproj -c Release
 ```
-Then run Inno Script
+Then run Inno Setup Script
